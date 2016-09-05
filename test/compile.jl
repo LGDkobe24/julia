@@ -16,6 +16,7 @@ function redirected_stderr(expected)
     return t
 end
 
+delete!(ENV, "JULIA_DEBUG_LOADING") # this would affect some error messages being tested below
 olderr = STDERR
 dir = mktempdir()
 dir2 = mktempdir()
@@ -225,11 +226,7 @@ try
     @test !Base.stale_cachefile(FooBar1_file, joinpath(dir2, "FooBar1.ji"))
     @test !Base.stale_cachefile(FooBar_file, joinpath(dir2, "FooBar.ji"))
 
-    t = redirected_stderr("""
-                          WARNING: Deserialization checks failed while attempting to load cache from $(joinpath(dir2, "FooBar1.ji")).
-                          WARNING: Module FooBar uuid did not match cache file.
-                          WARNING: replacing module FooBar1.
-                          """)
+    t = redirected_stderr("WARNING: replacing module FooBar1.")
     try
         reload("FooBar1")
     finally
